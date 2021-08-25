@@ -1,10 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using FilmesAPI.Models;
 using FilmesAPI.Data;
+using FilmesAPI.Data.Dtos;
+
 
 namespace FilmesAPI.Controllers
 {
@@ -24,8 +24,16 @@ namespace FilmesAPI.Controllers
           Depois da conexão não será mais necessário, porque o banco faz isso pra gente */  
 
         [HttpPost] //Criar
-         public IActionResult AdicionaFilme([FromBody]Filme filme)
+         public IActionResult AdicionaFilme([FromBody] CreateFilmeDto filmeDto)
         {
+           Filme filme = new Filme 
+           {
+              Titulo = filmeDto.Titulo,
+              Genero = filmeDto.Genero,
+              Diretor = filmeDto.Diretor,
+              Duracao = filmeDto.Duracao
+           }; //Criação de um objeto com um construtor implicíto 
+
            _context.Filmes.Add(filme);
            _context.SaveChanges();
           /* filme.Id = Id++; //incrementação do id para diferenciar os registros 
@@ -50,19 +58,30 @@ namespace FilmesAPI.Controllers
             return NotFound();
          }
          [HttpPut("{id}")]
-            public IActionResult AtualizaFilme(int id, [FromBody] Filme filmeNovo)
+            public IActionResult AtualizaFilme(int id, [FromBody] UpdateFilmeDto filmeDto)
                {
                   Filme filme = _context.Filmes.FirstOrDefault (filme => filme.Id == id);
                   if(filme == null)
                   return NotFound();
 
-                  filme.Titulo = filmeNovo.Titulo;
-                  filme.Genero = filmeNovo.Genero;
-                  filme.Diretor = filmeNovo.Diretor;
-                  filme.Duracao = filmeNovo.Duracao; //essa parte atualiza campo a campo o filme 
+                  filme.Titulo = filmeDto.Titulo;
+                  filme.Genero = filmeDto.Genero;
+                  filme.Diretor = filmeDto.Diretor;
+                  filme.Duracao = filmeDto.Duracao; //essa parte atualiza campo a campo o filme 
                   _context.SaveChanges();
                   return NoContent();
 
+               }
+               
+               [HttpDelete("{id}")]
+               public IActionResult DeletaFilmes(int id)
+               {
+                  Filme filme = _context.Filmes.FirstOrDefault (filme => filme.Id == id);
+                  if(filme == null)
+                  return NotFound();
+                  _context.Remove(filme);
+                  _context.SaveChanges();
+                  return NoContent();
                }
          
     }
