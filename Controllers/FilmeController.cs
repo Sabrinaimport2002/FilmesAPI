@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using FilmesAPI.Models;
 using FilmesAPI.Data;
 using FilmesAPI.Data.Dtos;
-
+using System;
+using AutoMapper;
 
 namespace FilmesAPI.Controllers
 {
@@ -13,10 +14,12 @@ namespace FilmesAPI.Controllers
     public class FilmeController : ControllerBase
     {
        private FilmeContext _context;
+       private IMapper _mapper;
 
-       public FilmeController(FilmeContext context)
+       public FilmeController(FilmeContext context, IMapper mapper)
        {
            _context = context;
+           _mapper = mapper;
        }
 
          /*private static List <Filme> filmes = new List<Filme>();
@@ -26,13 +29,15 @@ namespace FilmesAPI.Controllers
         [HttpPost] //Criar
          public IActionResult AdicionaFilme([FromBody] CreateFilmeDto filmeDto)
         {
-           Filme filme = new Filme 
+           Filme filme = _mapper.Map<Filme>(filmeDto); //conversão com mapeamento
+
+        /*  Filme filme = new Filme 
            {
               Titulo = filmeDto.Titulo,
               Genero = filmeDto.Genero,
               Diretor = filmeDto.Diretor,
               Duracao = filmeDto.Duracao
-           }; //Criação de um objeto com um construtor implicíto 
+           };*/ //Criação de um objeto com um construtor implicíto 
 
            _context.Filmes.Add(filme);
            _context.SaveChanges();
@@ -54,7 +59,23 @@ namespace FilmesAPI.Controllers
             /* Filme filme = filmes.FirstOrDefault (filme => filme.Id == id); Não será necessário depois da conexão*/
             Filme filme = _context.Filmes.FirstOrDefault (filme => filme.Id == id); //linha com o _context inserido
             if(filme != null)
-               return Ok(filme);
+          {
+             ReadFilmeDto filmeDto = _mapper.Map<ReadFilmeDto>(filme); //conversão com mapeamento
+
+
+              /*   ReadFilmeDto filmeDto = new ReadFilmeDto
+               {
+                  Id = filme.Id,
+                  Titulo = filme.Titulo,
+                  Genero = filme.Genero,
+                  Diretor = filme.Diretor,
+                  Duracao = filme.Duracao,
+                  HoraDaConsulta = DateTime.Now  
+               }; */ //estamos pegando do filme e colocando no dto 
+               //colocando uma informação extra
+
+               return Ok(filmeDto);
+            }
             return NotFound();
          }
          [HttpPut("{id}")]
@@ -64,12 +85,14 @@ namespace FilmesAPI.Controllers
                   if(filme == null)
                   return NotFound();
 
-                  filme.Titulo = filmeDto.Titulo;
+                  _mapper.Map(filmeDto, filme);
+
+                 /* filme.Titulo = filmeDto.Titulo;
                   filme.Genero = filmeDto.Genero;
                   filme.Diretor = filmeDto.Diretor;
-                  filme.Duracao = filmeDto.Duracao; //essa parte atualiza campo a campo o filme 
+                  filme.Duracao = filmeDto.Duracao;*/ //essa parte atualiza campo a campo o filme 
                   _context.SaveChanges();
-                  return NoContent();
+                  return NoContent(); 
 
                }
                
